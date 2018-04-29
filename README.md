@@ -15,7 +15,8 @@ to backup an oracle database (single instance/RAC or dataguard) to mounted NFS s
 This scripts follow the KISS concept (keep it simple and stupid) with all advantages and disadvantages - and needs some
 work for maintenance and setup.  
 IMPROVEMENTS: GLOBALIZE variable section and pre check scripts.     
-(Maybe verify new feature max. parallel jobs if scheduled via CloudControl.)
+(Maybe verify new feature max. parallel jobs if scheduled via CloudControl.)  
+Archivelogs should be backuped via cron or maybe use CHRONOS Job scheduler.  
 
 ## Repository Information
 ./sbin      => contains an example linux shell caller scripts  
@@ -47,4 +48,10 @@ BACKUP_DB_COMP_LONGTERM
 
 DELETE_ARCHIVELOGS_40DAYS_OLD
 /usr/local/sbin/rman_delete_archivelog_backup.sh %SID% 40
+```
+
+### ARCHIVELOG BACKUP - example
+```
+CRONTAB SCRIPT for archivelog backups
+05,25,45 * * * * oracle /usr/local/sbin/rman_backup_arch_auto_cron.sh -f \%d_arch_\%T_\%U -d 7 1>> /var/log/rman/orabackup 2>&1
 ```

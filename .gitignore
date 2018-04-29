@@ -1,4 +1,4 @@
 *.lst
 *.log
 *.out
-*_*.sh
+_*.sh

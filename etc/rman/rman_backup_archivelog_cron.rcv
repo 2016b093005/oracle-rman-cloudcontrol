@@ -1,0 +1,27 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_backup_archivelog_cron.rcv
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID, BACKUP BASE PATH
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - backup archivelog and delete input until n days 
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:		CRONTAB: "05,25,45 * * * * oracle /usr/local/sbin/rman_backup_archivelog_cron.sh -f \%d_arch_\%T_\%U -d 7 1>> /var/log/rman/orabackup 2>&1"
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.rman - caller scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_catcon.rman
+
+RUN {
+  SET COMMAND ID TO 'RMAN_BACKUP_ARCH_CRON';
+  BACKUP AS COMPRESSED BACKUPSET ARCHIVELOG ALL NOT BACKED UP 1 TIMES FORMAT '/nfs-shared/backup/&1/archivelog/&2';
+  BACKUP AS COMPRESSED BACKUPSET ARCHIVELOG UNTIL TIME 'sysdate-&3' NOT BACKED UP 1 TIMES DELETE INPUT FORMAT '/nfs-shared/backup/&1/archivelog/&2';
+}
