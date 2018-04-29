@@ -1,0 +1,33 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_delete_archivelog_backup.rcv
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - DELETE ARCHIVELOGS older of n days
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.rman - caller scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage 
+# For CC use OS COMMANDS with multitaskjobs.INFO: if used in CloudControl in combination delete only ON_SUCCESS
+# TASKNAME/CONDITION: os command to call
+  # DELETE_ARCHIVELOGS_40DAYS_OLD/ON_SUCCESS: /usr/local/sbin/rman_delete_archivelog_backup.sh %SID% 40
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_catcon.rman
+
+RUN
+{
+  SET COMMAND ID to 'RMAN_DELETE_ARCHIVELOG_BACKUP';
+  DELETE NOPROMPT BACKUP OF ARCHIVELOG UNTIL TIME 'sysdate-&2';
+}

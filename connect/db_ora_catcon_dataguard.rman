@@ -1,0 +1,7 @@
+# For oracle dataguard connects
+# example: edit for your environment
+
+connect target sys/password@PRIMARY_or_STANDBY
+connect catalog catalog_rman_schema/catalog_rman_password@catalog_rman_db_service;
+
+resync catalog from db_unique_name all;

@@ -1,0 +1,48 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_backup_database_longterm.rcv 
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID, BACKUP BASE PATH
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - LONGTERM/FULL DATABASE BACKUP without archivelogs 
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- BACKUP PATH:     /nfs-shared/backup/%SID%/longterm/ - backup mountpoint should exist
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.sh - caller scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage 
+# For CC use OS COMMANDS with multitaskjobs and change the below NFS backupdirs
+# TASKNAME/CONDITION: os command to call
+ # CHECK_DIR_LONGTERM/ALWAYS: /bin/ls -d /nfs-shared/backup/%SID%/longterm/  
+   # CREATE_DIR_LONGTERM_ON_ERROR/ON_FAILURE: /bin/mkdir -p /nfs-shared/backup/%SID%/longterm
+ # BACKUP_DB_COMP_LONGTERM/ALWAYS: /usr/local/sbin/rman_backup_database_longterm.sh %SID% longterm AS COMPRESSED BACKUPSET LONGTERM 186
+   # DELETE_ARCHIVELOGS_40DAYS_OLD/ON_SUCCESS: /usr/local/sbin/rman_delete_backup.sh %SID% 40
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_catcon.rman
+
+RUN
+{
+  SET COMMAND ID to 'RMAN_BACKUP_DATABASE_LONGTERM';
+  SQL 'alter system archive log current';
+  SQL 'alter system archive log current';
+  SQL 'alter system archive log current';
+  BACKUP &3 &4 &5 DATABASE
+  FORMAT '/nfs-shared/backup/&1/&2/%U'
+  TAG '&6'
+  KEEP UNTIL TIME 'sysdate+&7'
+  FILESPERSET 32;
+  SQL 'alter system archive log current';
+  SQL 'alter system archive log current';
+  SQL 'alter system archive log current';
+  BACKUP CURRENT CONTROLFILE;
+}

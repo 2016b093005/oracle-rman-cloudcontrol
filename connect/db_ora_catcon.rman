@@ -1,0 +1,5 @@
+# Normal Database Connect or for Oracle RAC
+# example: edit for your environment
+
+connect target /;
+connect catalog catalog_rman_schema/catalog_rman_password@catalog_rman_db_service;
