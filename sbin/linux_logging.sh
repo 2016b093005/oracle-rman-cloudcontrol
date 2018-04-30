@@ -3,7 +3,6 @@
 # Owner: J. Halwachs
 # ------------------------------------------------------------------------------------------------------------
 # ----  Script Name:  linux_logging.sh
-# ----  Version for production usage SVN Revision until xxxx
 # ----  Modification History:
 # ----  Date,           Author,         Desc.,
 # ----  2018-04-29,     J.Halwachs,     github creation
@@ -14,7 +13,7 @@
 # ----                     example call for main script "log 1 "*** install software - oracle_server - `date "format"`"
 # ------------------------------------------------------------------------------------------------------------
 # ---- BEFORE:
-# ---- 		PATH:		/var/log/oracle - directory should exists
+# ---- 		PATH:		/var/log/${USER} - if not run script as root create this user directory 
 # ---- 		SCRIPTLOCATION: /usr/local/sbin
 # ----
 # ---- AFTER: Todo's
@@ -38,7 +37,9 @@ LOG_FACILITY="local4"
 SCRIPT_LOC="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 SCRIPT_PATH=`dirname $SCRIPT_LOC`
 SCRIPT=`basename $SCRIPT_LOC`
-SWLOG_BASE="/var/log/oracle"
+USER=$(whoami)
+SWLOG_BASE="/var/log/${USER}"
+
 SWLOG_EXT=".log"
 DATE_FORMAT='+%Y-%m-%d %H:%M:%S'
 
@@ -56,6 +57,7 @@ SWLOG=${SWLOG_BASE}/${SWLOG_NAME}${SWLOG_EXT}
 # ------------------------------------------------------------------------------------------------------------
 function usage {
   echo "$MYSCRIPT [-hq] [-n logfilename ] arguments
+          Create $SWLOG_BASE directory if you are not root os user.
           Arguments:
                   -h : show this message on screen
                   -q : show this message on screen
@@ -85,8 +87,23 @@ if [ -z "$SWLOG_NAME" ]; then
   SWLOG=${SWLOG_NAME}
 fi
 if [ "$DEFAULT_LOG_NAME" != "SYSLOG" ] && [ ! -f "$SWLOG" ]; then
-  touch ${SWLOG}
-  chmod 777 ${SWLOG}
+  if [ ! -d ${SWLOG_BASE} ] && [ "${SWLOG_BASE_OWNER}" != "root" ] ; then
+    echo "Please create log directory ${SWLOG_BASE} as os user ${USER} and change permission to this user."
+    exit 1
+  elif [ "${SWLOG_BASE_OWNER}" = "root" ]; then
+    echo "Create directory ${SWLOG_BASE} as user $USER."
+    mkdir -p ${SWLOG_BASE}
+  else
+    SWLOG_BASE_OWNER=$(stat -c '%U' ${SWLOG_BASE})
+    if [ "${SWLOG_BASE_OWNER}" != "${USER}" ]; then
+      echo "Owner of directory ${SWLOG_BASE} is os user ${SWLOG_BASE_OWNER} change this to os user ${USER}."
+      exit 1
+    else
+      echo "Create logfile ${SWLOG} for user ${USER} and change permissions to 750."
+      touch ${SWLOG}
+      chmod 750 ${SWLOG}
+    fi
+  fi
 fi
 
 
@@ -149,4 +166,3 @@ fi
 
 log 1 "******************************************************************"
 log 1 "*** start logging - for script ${SCRIPT} - use - ${SWLOG}"
-
