@@ -1,0 +1,45 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_backup_database_inc.rcv 
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID, BACKUP BASE PATH, disk channel names, backupformat disk
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - Incremental L0,L1 Strategy without archivelogs 
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- BACKUP PATH:     /nfs-shared/backup/%DBName%/database/ - backup mountpoint should exist
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.sh - caller scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage - example - see DBname for PATH used for RAC
+# For CC use OS COMMANDS with multitaskjobs and change the below NFS backupdirs
+# TASKNAME/CONDITION: os command to call
+ # CHECK_DIR/ALWAYS: /bin/ls -d /nfs-shared/backup/%DBName%/database
+   # CREATE_DIR_ON_ERROR/ON_FAILURE: /bin/mkdir -p /nfs-shared/backup/%DBName%/database
+ # BACKUP_DB_COMP_L0: /usr/local/sbin/rman_backup_database_inc_rac.sh %SID% database 0 " " AS COMPRESSED BACKUPSET BACKUP_INC_L0 %DBName%
+   # DELETE_ARCHIVELOGS_40DAYS_OLD/ON_SUCCESS: /usr/local/sbin/rman_delete_backup.sh %SID% 40
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_catcon.rman
+
+RUN
+{
+  SET COMMAND ID to 'RMAN_BACKUP_DATABASE_INC';
+  ALLOCATE CHANNEL oem_disk_1 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2/%U';
+  ALLOCATE CHANNEL oem_disk_2 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2/%U';
+  BACKUP &5 &6 &7
+  INCREMENTAL LEVEL &3 &4 DATABASE
+  TAG '&8'
+  FILESPERSET 32;
+  RELEASE CHANNEL oem_disk_1;
+  RELEASE CHANNEL oem_disk_2;
+  BACKUP CURRENT CONTROLFILE;
+}
