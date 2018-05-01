@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-#
-# Owner: J. Halwachs
 # ------------------------------------------------------------------------------------------------------------
 # ----  Script Name:  linux_logging.sh
 # ----  Modification History:
