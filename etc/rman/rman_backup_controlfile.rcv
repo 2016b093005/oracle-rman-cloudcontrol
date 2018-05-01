@@ -1,0 +1,38 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_backup_controlfile.rcv
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - Backup current controlfile
+# ----						maybe on Dataguard Standby to sync. backupinformation
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.rman - caller scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage 
+# For CC use OS COMMANDS with multitaskjobs. Maybe for Dataguard sync. controlfile backupinformation. 
+# TASKNAME/CONDITION: os command to call
+  # /usr/local/sbin/rman_backup_controlfile.sh %SID% %%d_control_%%T_%%U 
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+# maybe change to DATAGUARD CONNECT
+#@/usr/local/connect/db_catcon.rman
+@/usr/local/connect/db_catcon_dataguard.rman
+
+RUN
+{
+  SET COMMAND ID to 'RMAN_BACKUP_CONTROLFILE';
+  ALLOCATE CHANNEL oem_disk_1 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2\.ctl';  
+  BACKUP CURRENT CONTROLFILE;
+  RELEASE CHANNEL oem_disk_1;
+}

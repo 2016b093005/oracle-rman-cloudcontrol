@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------------------------------------
-# ----  Script Name: rman_delete_obsolete_reco_window.sh
+# ----  Script Name: rman_backup_controlfile.sh
 # ----  Versioninformation
 # ----  Modification History:
 # ----  Date,           Author,         Desc.,
 # ----  2018-04-29,     J.Halwachs,     github creation 
 # ----  INPUT:   Variables from callerscript or CloudControl 
 # ----  OUTPUT:  logfile of the mainscript or CloudControl
-# ----  DEFAULT: ORATAB, BACKUP_BASE, SKIP_FILE 
-# ----  Short Description: RMANSCRIPT: Backup Oracle Database - DELETE obsolete and expired backups 
-# ----                                                          with defined RECOVERY WINDOW of n days !! 
+# ----  DEFAULT: ORATAB, RMAN_LOGFILE, BACKUP_BASE, BACKUP_DIR_NAME, SKIP_FILE name
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - Backup current controlfile
+# ----                                          maybe on Dataguard Standby to sync. backupinformation
 # ------------------------------------------------------------------------------------------------------------
 # ---- BEFORE:
 # ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
@@ -20,26 +20,30 @@
 # ------------------------------------------------------------------------------------------------------------
 
 # ---- Long Description: For CloudControl usage 
-# For CC use OS COMMANDS with multitaskjobs. Maybe combine delete with L1 Backups or on a daily schedule.
+# For CC use OS COMMANDS with multitaskjobs. Maybe for Dataguard sync. controlfile backupinformation. 
 # TASKNAME/CONDITION: os command to call
-  # CROSSCHECK_BACKUP /usr/local/sbin/rman_delete_obsolete_reco_window.sh %SID% 17
+  # /usr/local/sbin/rman_backup_controlfile.sh %SID% %%d_control_%%T_%%U 
 # ------------------------------------------------------------------------------------------------------------
+
 
 # Input
 export ORACLE_SID=$1
-export BACKUP_RECO_WINDOW_DAYS=$2
+export BACKUP_FORMAT=$2
 export VARCOUNT=$#
 
 # Variables
 ORATAB=/etc/oratab
+RMAN_LOGFILE=/var/log/rman/rman
 BACKUP_BASE="/nfs-shared/backup"
+BACKUP_DIR_NAME="database"
 SKIP_FILE=/tmp/skip_rman
 export PS_COUNT=`pstree -n|grep -i rman|grep -v sqlplus|grep -v logger|wc -l`
 export PS_ORA_COUNT=`ps -ef|grep -E 'smon|pmon'|grep -v grep|wc -l`
 
 # Prechecks
 if [ $VARCOUNT -ne 2 ];then
- echo "Please provide ORACLE_SID and BACKUP_RECO_WINDOW_DAYS in days as input parameter. VARCOUNT=${VARCOUNT}";
+ echo "Please provide ORACLE_SID and BACKUP_FORMAT - as input parameter. VARCOUNT=${VARCOUNT}";
+ echo "example for BACKUP_FORMAT: %d_%s_%p_%T";
  exit 1;
 fi
 
@@ -77,7 +81,6 @@ ORACLE_SID=`egrep -E "$regex" $ORATAB|awk '{print $1}'|awk -F: '{print $1}'`
 ORACLE_HOME=`egrep -E "$regex" $ORATAB|awk '{print $1}'|awk -F: '{print $2}'`
 ORACLE_START=`egrep -E "$regex" $ORATAB|awk '{print $1}'|awk -F: '{print $3}'`
 
-
 # Check if more than one value/line for ORACLE_SID is returned and exit if true
 export wc_SID=`echo $ORACLE_SID|wc -w`
 
@@ -86,11 +89,22 @@ if [ $wc_SID -gt 1 ] ; then
   exit 1;
 fi
 
+# Set the backuppath and create if this path do not exists
+BACKUP_DIR="${BACKUP_BASE}/${ORACLE_SID}/${BACKUP_DIR_NAME}"
+
+if [ ! -d "${BACKUP_DIR}" ] ; then
+  echo "Please Create Backup Path ${BACKUP_DIR} !"
+  echo "mkdir -p ${BACKUP_DIR}"
+  exit 1;
+else
+  echo "Directory ${BACKUP_DIR} exists."
+fi
 
 # Source the correct environment
 export ORAENV_ASK=NO
-. oraenv
+. $ORACLE_HOME/bin/oraenv -s
 
 # RMAN Call
-echo "rman cmdfile=/usr/local/etc/rman/rman_delete_obsolete_reco_window.rcv $BACKUP_RECO_WINDOW_DAYS "
-rman cmdfile=/usr/local/etc/rman/rman_delete_obsolete_reco_window.rcv $BACKUP_RECO_WINDOW_DAYS
+echo "Starting Backup with command"
+echo "rman cmdfile=/usr/local/etc/rman/rman_backup_controlfile.rcv $ORACLE_SID \'${BACKUP_FORMAT}\' log ${RMAN_LOGFILE} append"
+$ORACLE_HOME/bin/rman cmdfile=/usr/local/etc/rman/rman_backup_controlfile.rcv $ORACLE_SID \'${BACKUP_FORMAT}\' log ${RMAN_LOGFILE} append
