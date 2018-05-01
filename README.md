@@ -50,8 +50,9 @@ DELETE_ARCHIVELOGS_40DAYS_OLD
 /usr/local/sbin/rman_delete_archivelog_backup.sh %SID% 40
 ```
 
-### ARCHIVELOG BACKUP - example
+### CRON: ARCHIVELOG BACKUP - example
 ```
-CRONTAB SCRIPT for archivelog backups - uses custom linux logging script /usr/local/sbin/linux_logging.sh
+Requires LINUX LOGGING Script: /usr/local/sbin/linux_logging.sh
+CRONTAB SCRIPT for archivelog backups
 05,25,45 * * * * oracle /usr/local/sbin/rman_backup_archivelog_cron.sh -f \%d_arch_\%T_\%U -d 7 1>> /var/log/rman/orabackup 2>&1
 ```
