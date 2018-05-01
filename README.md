@@ -76,7 +76,7 @@ BACKUP_DB_COMP_L0
 /usr/local/sbin/rman_backup_database_inc_rac.sh %SID% database 0 " " AS COMPRESSED BACKUPSET BACKUP_INC_L0 %DBName%
 ```
 
-### BACKUP INCREMENTAL L1 RAC - example - WIP (some files currently not yet in repo)
+### BACKUP INCREMENTAL L1 RAC - example
 ```
 # Maybe use Standby on Dataguard
 TASKS	
@@ -105,4 +105,97 @@ DELETE_OBSOLETE_17DAYS_PAST
 
 DELETE_ARCH_BACKUP_40DAYS_OLD
 /usr/local/sbin/rman_delete_archivelog_backup.sh %DBName% 40
+```
+
+### BACKUP DELETE daily - example (maybe with RECO WINDOW 31 days as separate job)
+```
+# On DATAGUARD use PRIMARY
+TASKS
+CROSSCHECK_BACKUP           => ALWAYS
+DELETE_OBSOLETE_31DAYS_PAST => ALWAYS
+DELETE_BACKUP_40DAYS_OLD    => ALWAYS
+
+
+CROSSCHECK_BACKUP 
+/usr/local/sbin/rman_crosscheck.sh %SID%
+
+DELETE_OBSOLETE_31DAYS_PAST
+/usr/local/sbin/rman_delete_obsolete_reco_window.sh %SID% 31
+
+DELETE_ARCH_BACKUP_40DAYS_OLD
+/usr/local/sbin/rman_delete_archivelog_backup.sh %SID% 40
+```
+
+### VALIDATE DATABASE - example - currently not in the repo
+```
+RMAN Backup validate database and archivelogs for v$database_block_corruption view
+# primary & standby
+
+TASKS
+VALIDATE_DB_2_CHANNELS                     => ALWAYS
+/usr/local/sbin/rman_validate_db.sh %SID%
+```
+
+### ENABLE/DISABLE Backups - CC Job - example
+```
+TASKS in CC
+
+DISABLE_ALL_BACKUPS
+Script to remove backup skip file /tmp/skip_rman run on all database server.
+rm /tmp/skip_rman
+
+ENABLE_ALL_BACKUPS
+Script to create backup skip file /tmp/skip_rman run on all database server.
+echo "cloud_control_disabled" > /tmp/skip_rman
+```
+
+### COLD BACKUP - CC Job - example
+```
+TASKS
+STARTBLACKOUT               => ALWAYS
+CHECK_DIR                   => ALWAYS
+    CREATE_DIR_ON_ERROR     => ON ERROR
+BACKUP_DATABASE_COLD        => ALWAYS    
+    DELETE_BACKUP_40DAYS_OLD=> ON SUCCESS
+ENDBLACKOUT => ALWAYS    
+
+
+STARTBLACKOUT  
+/u01/app/oracle/product/agent12c/core/latest/bin/emctl start blackout cold_backup -nodeLevel
+
+CHECK_DIR 
+/bin/ls -d /nfs-shared/backup/%SID%/database/
+
+CREATE_DIR_ON_ERROR
+/bin/mkdir -p /nfs-shared/backup/%SID%/database/
+
+BACKUP_DATABASE_COLD # RMAN SCRIPT: maybe add 3 logswitches 
+run {
+  shutdown immediate;
+  startup mount;
+  backup database;
+  backup current controlfile;
+  backup spfile;
+  sql "alter database backup controlfile to trace as ''/nfs-shared/backup/%SID%/database/control.trc'' reuse";
+  sql "create pfile=''/nfs-shared/backup/%SID%/database/pfile.ora'' from spfile";
+  shutdown immediate;
+  startup;
+}
+
+DELETE_BACKUP_40DAYS_OLD
+/usr/local/sbin/rman_delete_archivelog_backup.sh %SID% 40
+
+NDBLACKOUT
+/u01/app/oracle/product/agent12c/core/latest/bin/emctl stop blackout cold_backup
+```
+
+### BACKUP Current Controlfile - example
+Maybe to sync. controlfile backup information from DATAGUARD standby.
+```
+CHECK_DIR
+/bin/ls -d /nfs-shared/backup/%SID%/archivelog/
+CREATE_DIR_ON_ERROR
+/bin/mkdir -p /nfs-shared/backup/%SID%/archivelog/
+BACKUP_CONTROLFILE
+/usr/local/sbin/rman_backup_controlfile.sh %SID% %%d_control_%%T_%%U
 ```
