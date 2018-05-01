@@ -1,0 +1,35 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_delete_obsolete_reco_window.rcv
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - DELETE obsolete and expired backups 
+# ----								with defined RECOVERY WINDOW of n days !! 
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.rman - caller scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage 
+# For CC use OS COMMANDS with multitaskjobs. Maybe combine delete with L1 Backups or on a daily schedule.
+# TASKNAME/CONDITION: os command to call
+  # CROSSCHECK_BACKUP /usr/local/sbin/rman_delete_obsolete_reco_window.sh %SID% 17
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_catcon.rman
+
+RUN
+{
+  SET COMMAND ID to 'RMAN_DELETE_OBSOLETE_RECO_WINDOW';
+  DELETE NOPROMPT OBSOLETE RECOVERY WINDOW OF &1 DAYS DEVICE TYPE DISK;
+  DELETE NOPROMPT FORCE EXPIRED BACKUP;
+}

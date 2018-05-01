@@ -1,0 +1,34 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_crosscheck.rcv
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID
+# ----  Short Description: RMANSCRIPT: Backup Oracle Database - Crosscheck Backup and Copy
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.rman - caller scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage 
+# For CC use OS COMMANDS with multitaskjobs. Maybe combine crosscheck with L1 Backups or on a daily schedule.
+# TASKNAME/CONDITION: os command to call
+  # CROSSCHECK_BACKUP /usr/local/sbin/rman_crosscheck.sh %SID%
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_catcon.rman
+
+RUN
+{
+  SET COMMAND ID to 'RMAN_CROSSCHECK';
+  CROSSCHECK BACKUP;
+  CROSSCHECK COPY;
+}
