@@ -1,6 +1,6 @@
 # Backupscript for Oracle Database with RMAN
 
-## State of Repository: WIP
+## State of Repository: Major Scripts added
 
 ## USAGE
 USE SCRIPTS AT YOUR OWN RISK and always validate BACKUP/RESTORE SCRIPTS in DEVELOPMENT ENVIRONMENTS specially for new Oracle Versions or infrastructure changes and change scripts to your needs !! Verify if you have license for oracle database - maybe also for backup compression.  
