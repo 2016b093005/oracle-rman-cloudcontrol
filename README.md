@@ -75,3 +75,34 @@ CREATE_DIR_ON_ERROR
 BACKUP_DB_COMP_L0
 /usr/local/sbin/rman_backup_database_inc_rac.sh %SID% database 0 " " AS COMPRESSED BACKUPSET BACKUP_INC_L0 %DBName%
 ```
+
+### BACKUP INCREMENTAL L1 RAC - example - WIP (some files currently not yet in repo)
+```
+# Maybe use Standby on Dataguard
+TASKS	
+CHECK_DIR                           => ALWAYS
+    CREATE_DIR_ON_ERROR             => ON FAILURE
+CROSSCHECK_BACKUP                   => ALWAYS
+BACKUP_DB_COMP_L1                   => ALWAYS
+    DELETE_OBSOLETE_17DAYS_PAST     => ON SUCCESS
+    DELETE_BACKUP_40DAYS_OLD        => ON SUCCESS
+    
+ 
+CHECK_DIR
+/bin/ls -d /nfs-shared/backup/%DBName%/database/
+ 
+CREATE_DIR_ON_ERROR
+/bin/mkdir -p /nfs-shared/backup/%DBName%/database
+
+CROSSCHECK_BACKUP
+/usr/local/sbin/rman_crosscheck.sh %SID%
+
+BACKUP_DB_COMP_L1
+/usr/local/sbin/rman_backup_database_inc_rac.sh %SID% database 1 " " AS COMPRESSED BACKUPSET BACKUP_INC_L1 %DBName%
+
+DELETE_OBSOLETE_17DAYS_PAST
+/usr/local/sbin/rman_delete_obsolete_reco_window.sh %SID% 17
+
+DELETE_BACKUP_40DAYS_OLD
+/usr/local/sbin/rman_delete_backup.sh %DBName% 40
+```
