@@ -10,7 +10,7 @@
 # ----  DEFAULT: see default variable/value settings - see below 
 # ----  Short Description: ORACLE BACKUP RMAN - Crontab script to backup the archivelogs and delete archivelogs until time sysdate-$BACKUP_ARCHDEL
 # ------------------------------------------------------------------------------------------------------------
-# ---- BEFORE:  LINUX LOGGING SCRIPT SHOULD exists - see below 
+# ---- BEFORE:  LINUX LOGGING SCRIPT SHOULD exists - see below - and /var/log/$EXEC_USER dir should exits
 # ----		FOR RAC - backup will run only on the node with the highest available instance number 
 # ----          IMPORTANT !!! Please change MIN_DEL_DAYS to you needs - should be longer than intervall of L1 backups for rollforward. !!!
 # ----          If there are old hung rman processes - please kill (see process check below).
@@ -31,8 +31,14 @@ LOGSCRIPTLOC=/usr/local/sbin/linux_logging.sh
 # ------------------------------------------------------------------------------------------------------------
 function main {
   # LOGS go to SYSLOG
-  [ -f "${LOGSCRIPTLOC}" ] && source ${LOGSCRIPTLOC} || echo "Logging Script under ${LOGSCRIPTLOC} not found" && exit 1;
-  
+  if [ -f "${LOGSCRIPTLOC}" ] ; then
+    source ${LOGSCRIPTLOC} 
+    #source ${LOGSCRIPTLOC} -n rman_backup_archivelog_cron 
+  else
+    echo "Logging Script under ${LOGSCRIPTLOC} not found"
+    exit 1
+  fi
+
   # Do some prechecks and set important vars
   prepare
 
@@ -130,7 +136,7 @@ function prepare {
 
   if [ "$(whoami)" != "oracle" ] ; then
     echo "Use oracle os user for this script"
-    log 1 "OSUSER-CHECK: This script should be startet as oracle os user"
+    log 1 "OSUSER-CHECK: This script should be started as oracle os user"
     exit $E_WARN
   fi
 
@@ -344,7 +350,6 @@ function backupValid() {
 # ------------------------------------------------------------------------------------------------------------
 # Get commandline options
 # ------------------------------------------------------------------------------------------------------------
-# ### change Arguments -a and -b to your needs !!!!!!
 # see http://home.comcast.net/~dwm042/Standards.htm
 function usage {
   echo "$MYSCRIPT [-hq] [-f format_string] [-d days] arguments
