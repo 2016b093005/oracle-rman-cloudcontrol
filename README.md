@@ -34,7 +34,7 @@ TASKS (all OS COMMANDS)
 CHECK_DIR_LONGTERM                          => ALWAYS
     	CREATE_DIR_LONGTERM_ON_ERROR        => ON_FAILURE
 BACKUP_DB_COMP_LONGTERM                     => ALWAYS
-         DELETE_ARCHIVELOGS_40DAYS_OLD      => ON SUCCESS
+         DELETE_ARCH_BACKUP_40DAYS_OLD      => ON SUCCESS
          
 
 CHECK_DIR_LONGTERM 
@@ -46,7 +46,7 @@ CREATE_DIR_LONGTERM_ON_ERROR
 BACKUP_DB_COMP_LONGTERM
 /usr/local/sbin/rman_backup_database_longterm.sh %SID% longterm AS COMPRESSED BACKUPSET LONGTERM 186
 
-DELETE_ARCHIVELOGS_40DAYS_OLD
+DELETE_ARCH_BACKUP_40DAYS_OLD
 /usr/local/sbin/rman_delete_archivelog_backup.sh %SID% 40
 ```
 
@@ -85,7 +85,7 @@ CHECK_DIR                           => ALWAYS
 CROSSCHECK_BACKUP                   => ALWAYS
 BACKUP_DB_COMP_L1                   => ALWAYS
     DELETE_OBSOLETE_17DAYS_PAST     => ON SUCCESS
-    DELETE_BACKUP_40DAYS_OLD        => ON SUCCESS
+    DELETE_ARCH_BACKUP_40DAYS_OLD   => ON SUCCESS
     
  
 CHECK_DIR
@@ -103,6 +103,6 @@ BACKUP_DB_COMP_L1
 DELETE_OBSOLETE_17DAYS_PAST
 /usr/local/sbin/rman_delete_obsolete_reco_window.sh %SID% 17
 
-DELETE_BACKUP_40DAYS_OLD
-/usr/local/sbin/rman_delete_backup.sh %DBName% 40
+DELETE_ARCH_BACKUP_40DAYS_OLD
+/usr/local/sbin/rman_delete_archivelog_backup.sh %DBName% 40
 ```
