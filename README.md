@@ -56,3 +56,22 @@ Requires LINUX LOGGING Script: /usr/local/sbin/linux_logging.sh
 CRONTAB SCRIPT for archivelog backups
 05,25,45 * * * * oracle /usr/local/sbin/rman_backup_archivelog_cron.sh -f \%d_arch_\%T_\%U -d 7 1>> /var/log/rman/orabackup 2>&1
 ```
+
+### FULL BACKUP INCREMENTAL L0 RAC - example
+```
+# Maybe use Standby on Dataguard
+# Further shell scripts for normal databases: rman_backup_database_inc.sh
+TASKS (all OS COMMANDS)
+CHECK_DIR                   => ALWAYS
+    CREATE_DIR_ON_ERROR     => ON_FAILURE
+BACKUP_DB_COMP_L0           => ALWAYS
+
+CHECK_DIR
+/bin/ls -d /nfs-shared/backup/%DBName%/database/
+
+CREATE_DIR_ON_ERROR
+/bin/mkdir -p /nfs-shared/backup/%DBName%/database
+
+BACKUP_DB_COMP_L0
+/usr/local/sbin/rman_backup_database_inc_rac.sh %SID% database 0 " " AS COMPRESSED BACKUPSET BACKUP_INC_L0 %DBName%
+```
