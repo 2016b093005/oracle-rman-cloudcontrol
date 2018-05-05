@@ -27,7 +27,7 @@
 # Database and Catalog Connect
 # maybe change to DATAGUARD CONNECT
 #@/usr/local/connect/db_catcon.rman
-@/usr/local/connect/db_catcon_dataguard.rman
+@/usr/local/connect/db_ora_catcon_dataguard.rman
 
 RUN
 {
