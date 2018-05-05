@@ -18,7 +18,7 @@
 # ------------------------------------------------------------------------------------------------------------
 
 # Database and Catalog Connect
-@/usr/local/connect/db_catcon.rman
+@/usr/local/connect/db_ora_catcon.rman
 
 RUN {
   SET COMMAND ID TO 'RMAN_BACKUP_ARCH_CRON';
