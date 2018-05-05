@@ -24,7 +24,7 @@
 # ------------------------------------------------------------------------------------------------------------
 
 # Database and Catalog Connect
-@/usr/local/connect/db_catcon.rman
+@/usr/local/connect/db_ora_catcon.rman
 
 RUN
 {
