@@ -1,0 +1,38 @@
+# ------------------------------------------------------------------------------------------------------------
+# ----  Script Name: rman_validate_db.rcv
+# ----  Versioninformation
+# ----  Modification History:
+# ----  Date,           Author,         Desc.,
+# ----  2018-04-29,     J.Halwachs,     github creation 
+# ----  INPUT:   Variables from callerscript or CloudControl 
+# ----  OUTPUT:  logfile of the mainscript or CloudControl
+# ----  DEFAULT: COMMAND ID
+# ----  Short Description: RMANSCRIPT: VALIDATE Oracle Database - to populate V$DATABASE_BLOCK_CORRUPTION
+# ------------------------------------------------------------------------------------------------------------
+# ---- BEFORE:
+# ---- CONNECT SCRIPTS: /usr/local/connect/*.rman - connect scripts should exists
+# ---- CALLER SCRIPTS:  /usr/local/sbin/*.rman - caller scripts should exists
+# ---- RMAN SCRIPTS:    /usr/local/etc/rman/*.rman - rman scripts should exists
+# ----
+# ---- AFTER: verify logfiles 
+# ------------------------------------------------------------------------------------------------------------
+
+# ---- Long Description: For CloudControl usage 
+# For CC use OS COMMANDS with multitaskjobs. Maybe allocate more Channels - according you database size and CPU.
+# 		Maybe enable change_tracking_file. Verify sometimes this also on Primary DB using Dataguard.
+# TASKNAME/CONDITION: os command to call
+  # VALIDATE_DB_2_CHANNELS/ALWAYS: /usr/local/sbin/rman_validate_db.sh %SID% 
+# ------------------------------------------------------------------------------------------------------------
+
+# Database and Catalog Connect
+@/usr/local/connect/db_ora_catcon.rman
+
+RUN
+{
+  CONFIGURE DEVICE TYPE DISK parallelism 2;
+  ALLOCATE CHANNEL oem_disk_1 DEVICE TYPE DISK;
+  ALLOCATE CHANNEL oem_disk_2 DEVICE TYPE DISK;
+  BACKUP VALIDATE CHECK LOGICAL DATABASE;
+  RELEASE CHANNEL oem_disk_1;
+  RELEASE CHANNEL oem_disk_2;
+}
