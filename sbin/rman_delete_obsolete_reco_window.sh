@@ -70,7 +70,7 @@ fi
 # Get local ORACLE ENV details by parsing /etc/oratab
 # Format: SID:ORACLE_HOME_PATH:START_FLAG
 # START_FLAG used for Backup - verify set only once
-regex='^(\w)*:(/[a-zA-Z 0-9 .]*)*:Y' 
+regex='^(\w)*:(/[a-zA-Z 0-9 _ .]*)*:Y' 
 
 # Parse /etc/oratab and set important env parameter for later oraenv script usage
 ORACLE_SID=`egrep -E "$regex" $ORATAB|awk '{print $1}'|awk -F: '{print $1}'`
