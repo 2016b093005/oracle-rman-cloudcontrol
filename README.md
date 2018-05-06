@@ -55,6 +55,16 @@ DELETE_ARCH_BACKUP_40DAYS_OLD
 Requires LINUX LOGGING Script: /usr/local/sbin/linux_logging.sh
 CRONTAB SCRIPT for archivelog backups
 05,25,45 * * * * oracle /usr/local/sbin/rman_backup_archivelog_cron.sh -f \%d_arch_\%T_\%U -d 7 1>> /var/log/rman/orabackup 2>&1
+
+DOCKER: Use LOGFILE on mounted LOGVOL (or enable SYSLOG inside DOCKER)
+# CRONTAB: root@DockerHost
+05,21,44 * * * * docker exec -d -u oracle db "/home/oracle/scripts/start_arch_backup.sh"
+
+# SCRIPT: oracle@Container:db
+# /home/oracle/scripts/start_arch_backup.sh
+#!/usr/bin/env bash
+# startscript to start outside docker container 
+/usr/local/sbin/rman_backup_archivelog_cron.sh -f \%d_arch_\%T_\%U -d 7 1>> /var/log/rman/orabackup 2>&1
 ```
 
 ### FULL BACKUP INCREMENTAL L0 RAC - example
