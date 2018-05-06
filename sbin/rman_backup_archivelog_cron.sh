@@ -17,10 +17,11 @@
 # ----          /etc/oratab should contain Instance with ending Flag :Y and DB_NAME is one letter shorter. After reboot this will be changed by the RAC software.
 # ----		CREATE DIRECTORY: /var/log/rman/rman # Change permissions to os user oracle
 # ---- AFTER or TODOs:
-# ----          Check syslog entries and /var/log/rman directory for logfiles. 
+# ----          Check syslog entries and/or /var/log/rman directory for logfiles. 
 # ----          For 12c - dNFS needs separated archivelogs (not in FRA) - maybe some special additional archivelogdeletion handling is needed.
 # ----          Use custom configuration file - example: DB_CONFIG_FILE="/etc/cmdb_oracle.json" 
-# ----          Maybe enable backups if max. Cluster Instance is only mounted. 
+# ----          Maybe enable backups if max. Cluster Instance is only mounted. ADD NOLOGGING CHECK
+# ---- DOCKER	Create archivelog backupscript that contains the crontab call from SETUP.md. If SYSLOG is not enabled - use linux_logging.sh -n logfilename.
 # ------------------------------------------------------------------------------------------------------------
 
 # ---- Global packages or module integration
@@ -30,7 +31,7 @@ LOGSCRIPTLOC=/usr/local/sbin/linux_logging.sh
 # Begin MAIN PART
 # ------------------------------------------------------------------------------------------------------------
 function main {
-  # LOGS go to SYSLOG
+  # CHANGE TO YOUR NEED - SYSLOG or LOGFILE 
   if [ -f "${LOGSCRIPTLOC}" ] ; then
     source ${LOGSCRIPTLOC} 
     #source ${LOGSCRIPTLOC} -n rman_backup_archivelog_cron 
@@ -95,6 +96,7 @@ export BACKUP_DIR_NAME="archivelog"
 export BACKUP_OK='false'
 export PS_COUNT=`pstree -n|grep -i rman|grep -v sqlplus|grep -v logger|wc -l`
 export PS_ORA_COUNT=`ps -ef|grep -E 'smon|pmon'|grep -v grep|wc -l`
+export USER=$(whoami)
 # Compare valid related parameter. Maybe oracle version dependent in the future 
 export DBTYPE_PRIMARY='PRIMARY'
 export DBTYPE_STANDBY='STANDBY'
@@ -134,7 +136,7 @@ function prepare {
     exit $OK;
   fi 
 
-  if [ "$(whoami)" != "oracle" ] ; then
+  if [ "${USER}" != "oracle" ] ; then
     echo "Use oracle os user for this script"
     log 1 "OSUSER-CHECK: This script should be started as oracle os user"
     exit $E_WARN
@@ -180,7 +182,7 @@ function prepare {
   # Get local ORACLE ENV details by parsing /etc/oratab
   # Format: SID:ORACLE_HOME_PATH:START_FLAG
   # START_FLAG used for Backup - verify set only once
-  regex='^(\w)*:(/[a-zA-Z 0-9 .]*)*:Y' 
+  regex='^(\w)*:(/[a-zA-Z 0-9 _ .]*)*:Y' 
 
   # Parse /etc/oratab and set important env parameter for later oraenv script usage
   export ORACLE_SID=`egrep -E "$regex" $ORATAB|awk '{print $1}'|awk -F: '{print $1}'`

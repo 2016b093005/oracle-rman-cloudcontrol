@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+#
+# Owner: J. Halwachs
 # ------------------------------------------------------------------------------------------------------------
 # ----  Script Name:  linux_logging.sh
 # ----  Modification History:
@@ -78,29 +80,32 @@ shift $(( OPTIND - 1 ))
 # prechecks
 # ------------------------------------------------------------------------------------------------------------
 if [ -z "$SWLOG_NAME" ]; then
-  echo  "no parameter given for logging - use instead SYSLOG !"
+  echo  "INFO: No parameter given for logging - use instead SYSLOG."
   # USE SYSLOG as default logging if no INPUTPARAMETER  (-n name)
   DEFAULT_LOG_NAME=SYSLOG
   SWLOG_NAME=${DEFAULT_LOG_NAME}
   SWLOG=${SWLOG_NAME}
-fi
-if [ "$DEFAULT_LOG_NAME" != "SYSLOG" ] && [ ! -f "$SWLOG" ]; then
-  if [ ! -d ${SWLOG_BASE} ] && [ "${SWLOG_BASE_OWNER}" != "root" ] ; then
-    echo "Please create log directory ${SWLOG_BASE} as os user ${USER} and change permission to this user."
-    exit 1
-  elif [ "${SWLOG_BASE_OWNER}" = "root" ]; then
-    echo "Create directory ${SWLOG_BASE} as user $USER."
-    mkdir -p ${SWLOG_BASE}
+elif [ "$DEFAULT_LOG_NAME" != "SYSLOG" ] && [ ! -f "$SWLOG" ]; then
+  touch ${SWLOG}
+  SWLOG_TOUCH_FILE_RC=$?
+  chmod 750 ${SWLOG}
+  echo "RC is $SWLOG_TOUCH_FILE_RC" 
+  if [ $SWLOG_TOUCH_FILE_RC -eq 1 ]; then
+    echo "WARNING: Could not create logfile with name ${SWLOG} - create directory or check file permissions - use instead SYSLOG."
   else
-    SWLOG_BASE_OWNER=$(stat -c '%U' ${SWLOG_BASE})
-    if [ "${SWLOG_BASE_OWNER}" != "${USER}" ]; then
-      echo "Owner of directory ${SWLOG_BASE} is os user ${SWLOG_BASE_OWNER} change this to os user ${USER}."
-      exit 1
-    else
-      echo "Create logfile ${SWLOG} for user ${USER} and change permissions to 750."
-      touch ${SWLOG}
-      chmod 750 ${SWLOG}
-    fi
+    echo "INFO: Logfile created under ${SWLOG}."
+  fi
+elif [ -f "${SWLOG}" ]; then
+  SWLOG_OWNER=$(stat -c '%U' ${SWLOG})
+  if [ "$SWLOG_OWNER" != "${USER}" ]; then
+    echo "Owner of logfile ${SWLOG} is os user ${SWLOG_OWNER} change this to os user ${USER} - use instead SYSLOG."
+    # USE SYSLOG as default logging if no INPUTPARAMETER  (-n name)
+    DEFAULT_LOG_NAME=SYSLOG
+    SWLOG_NAME=${DEFAULT_LOG_NAME}
+    SWLOG=${SWLOG_NAME}
+  else
+    touch ${SWLOG}
+    chmod 750 ${SWLOG}
   fi
 fi
 
