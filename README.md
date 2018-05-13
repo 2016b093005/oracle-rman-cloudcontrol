@@ -16,7 +16,7 @@ This scripts follow the KISS concept (keep it simple and stupid) with all advant
 work for maintenance and setup.  
 IMPROVEMENTS: GLOBALIZE variable section and pre check scripts.     
 (Maybe verify new feature max. parallel jobs if scheduled via CloudControl.)  
-Archivelogs should be backuped via cron or maybe use CHRONOS Job scheduler.  
+Archivelogs should be backuped via cron or maybe use [CHRONOS Job scheduler](https://github.com/mesos/chronos).  
 
 ## Repository Information
 ./sbin      => contains an example linux shell caller scripts  
