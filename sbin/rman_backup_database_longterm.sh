@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------------------------------------
-# ----  Script Name: rman_backup_database_longterm.rcv 
+# ----  Script Name: rman_backup_database_longterm.sh 
 # ----  Versioninformation
 # ----  Modification History:
 # ----  Date,           Author,         Desc.,
