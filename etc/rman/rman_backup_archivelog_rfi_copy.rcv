@@ -32,8 +32,8 @@
 RUN
 {
   SET COMMAND ID to 'RMAN_BACKUP_RFI_ARCHIVELOG_COPY';
-  ALLOCATE CHANNEL oem_disk_1 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/rfi/%U';
-  ALLOCATE CHANNEL oem_disk_2 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/rfi/%U';
+  ALLOCATE CHANNEL oem_disk_1 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2/%U';
+  ALLOCATE CHANNEL oem_disk_2 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2/%U';
   BACKUP as copy ARCHIVELOG ALL;
   RELEASE CHANNEL oem_disk_1;
   RELEASE CHANNEL oem_disk_2;
