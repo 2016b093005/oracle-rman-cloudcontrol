@@ -23,7 +23,7 @@
 # TASKNAME/CONDITION: os command to call
  # CHECK_DIR_RFI/ALWAYS: /bin/ls -d /nfs-shared/backup/%SID%/rfi/  
    # CREATE_DIR_RFI_ON_ERROR/ON_FAILURE: /bin/mkdir -p /nfs-shared/backup/%SID%/rfi
- # BACKUP_DATABASE_RFI_L1/ALWAYS: /usr/local/sbin/rman_backup_database_rfi_l1.sh %SID% rfi RFI 1
+ # BACKUP_DATABASE_RFI_L1/ALWAYS: /usr/local/sbin/rman_backup_database_rfi_l1.sh %SID% rfi RFI 1 ""
 # ------------------------------------------------------------------------------------------------------------
 
 # Database and Catalog Connect
@@ -36,7 +36,7 @@ RUN
   SQL 'alter system archive log current';
   ALLOCATE CHANNEL oem_disk_1 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2/%U';
   ALLOCATE CHANNEL oem_disk_2 DEVICE TYPE DISK FORMAT '/nfs-shared/backup/&1/&2/%U';
-  BACKUP INCREMENTAL LEVEL &4
+  BACKUP INCREMENTAL LEVEL &4 &5
   FOR RECOVER OF COPY WITH TAG '&3' DATABASE;
   SQL 'alter system archive log current';
   SQL 'alter system archive log current';
