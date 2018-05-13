@@ -8,6 +8,7 @@
 # ----  OUTPUT:  logfile of the mainscript or CloudControl
 # ----  DEFAULT: COMMAND ID, BACKUP BASE PATH
 # ----  Short Description: RMANSCRIPT: Rollforward the Database Backups - with Rolling Forward Images
+# ----                     Rollforward L0 image to "sysdate - BACKUP_UTIME_DAYS" in the past
 # ------------------------------------------------------------------------------------------------------------
 # ---- BEFORE:
 # ---- BACKUP PATH:     /nfs-shared/backup/%SID%/rfi/ - backup mountpoint should exist
